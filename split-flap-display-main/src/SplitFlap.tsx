@@ -97,7 +97,7 @@ export function SplitFlap({ character }: SplitFlapProps) {
   return (
     <div
       key={id + idx}
-      className="relative w-[1em] h-[2em] rounded bg-stone-900 text-stone-50"
+      className="relative w-[1em] h-[1.68em] rounded bg-stone-900 text-stone-50"
     >
       <div className="absolute top-[-1px] w-full overflow-hidden rounded-t bg-stone-900 h-1/2">
         <span className="absolute top-0 flex justify-center w-full pt-1">

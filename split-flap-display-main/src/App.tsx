@@ -1,59 +1,53 @@
 import { useEffect, useState } from "react";
-import "./App.css";
-import { SplitFlapBoard } from "./SplitFlapBoard";
+import { DrinkCard } from "./components/DrinkCard";
+import drinksJSON from "./data/drinks.json";
 
-const lyrics = [
-  "Now, this is a story",
-  "all about how",
-  "My life got flipped-turned",
-  "upside down",
-  "And I'd like to take a minute",
-  "Just sit right there",
-  "I'll tell you how I became",
-  "the prince of a town called Bel-Air",
-  "In West Philadelphia",
-  "born and raised",
-  "On the playground was where",
-  "I spent most of my days",
-  "Chillin' out,",
-  "maxin', relaxin', all cool",
-  "And all shootin' some b-ball",
-  "outside of the school",
-  "When a couple of guys",
-  "who were up to no good",
-  "Started making trouble",
-  "in my neighborhood",
-  "I got in one little fight",
-  "and my mom got scared",
-  "She said,",
-  "\"You're movin' with your auntie",
-  'and uncle in Bel-Air"',
-];
-
-const lines = 4;
+interface Drink {
+  id: number;
+  name: string;
+  price: number;
+}
 
 function App() {
-  const [idx, setIdx] = useState(0);
+  const [drinks, setDrinks] = useState<Drink[]>(drinksJSON);
+  const [prevPrices, setPrevPrices] = useState<Map<number, number>>(
+    new Map(drinksJSON.map((d) => [d.id, d.price]))
+  );
 
+  // ⏱ Auto-uppdatera priser var 10:e sekund
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      setIdx((i) => i + lines);
-    }, 8000);
+    const interval = setInterval(() => {
+      // 🔁 Uppdatera prevPrices inför varje ny beräkning
+      setPrevPrices(new Map(drinks.map((d) => [d.id, d.price])));
+
+      // 🎲 Nytt pris per dryck (slumpmässigt)
+      setDrinks((prev) =>
+        prev.map((d) => {
+          const delta = Math.floor(Math.random() * 5 - 2); // -2 till +2
+          const newPrice = Math.max(20, d.price + delta);
+          return { ...d, price: newPrice };
+        })
+      );
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const maxLength = lyrics
-    .map((str) => str.length)
-    .reduce((acc, val) => (val > acc ? val : acc), 0);
+  }, [drinks]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-2 bg-stone-600">
-      <SplitFlapBoard
-        content={Array.from({ length: lines }).map((_, i) =>
-          lyrics[(idx + i) % lyrics.length].padEnd(maxLength, " "),
-        )}
-      />
+    <div className="min-h-screen bg-black text-white p-4">
+      <h1 className="text-4xl font-mono mb-6 text-center tracking-widest">
+        🍻 Drinkbörsen
+      </h1>
+      <div className="grid grid-cols-4 gap-4 max-w-6xl mx-auto">
+        {drinks.map((drink) => (
+          <DrinkCard
+            key={drink.id}
+            name={drink.name}
+            price={drink.price}
+            prevPrice={prevPrices.get(drink.id) ?? drink.price}
+          />
+        ))}
+      </div>
     </div>
   );
 }
