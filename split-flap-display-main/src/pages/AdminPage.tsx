@@ -1,82 +1,85 @@
-import { useState } from "react";
-import drinksData from "../data/drinks.json";
+import { useEffect, useState } from "react";
 import { DrinkAdminRow } from "../components/DrinkAdminRow";
 
 interface Drink {
   id: number;
   name: string;
   price: number;
-}
-
-interface AdminDrinkState {
+  previousPrice: number;
   sold: number;
   min: number;
   max: number;
 }
 
 export function AdminPage() {
-  const [adminState, setAdminState] = useState<Record<number, AdminDrinkState>>(
-    () =>
-      Object.fromEntries(
-        drinksData.map((d) => [
-          d.id,
-          { sold: 0, min: d.price - 10, max: d.price + 10 },
-        ])
-      )
-  );
+  const [drinks, setDrinks] = useState<Drink[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSoldChange = (id: number, value: number) => {
-    setAdminState((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], sold: value },
-    }));
-  };
+  useEffect(() => {
+    fetch("http://localhost:4000/drinks")
+      .then((res) => res.json())
+      .then((data) => {
+        setDrinks(data);
+        setLoading(false);
+      });
+  }, []);
 
-  const handleMinChange = (id: number, value: number) => {
-    setAdminState((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], min: value },
-    }));
-  };
+  const updateDrink = (id: number, field: keyof Drink, value: number) => {
+    const updated = drinks.map((d) =>
+      d.id === id ? { ...d, [field]: value } : d
+    );
+    setDrinks(updated);
 
-  const handleMaxChange = (id: number, value: number) => {
-    setAdminState((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], max: value },
-    }));
+    fetch("http://localhost:4000/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, [field]: value }),
+    });
   };
 
   const handleRegister = () => {
-    // I framtiden: skicka till backend!
-    console.log("🔁 Skickar till modell:", adminState);
-    alert("✅ Försäljning registrerad (lokalt)!");
+    fetch("http://localhost:4000/recalculate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "normal" }),
+    })
+      .then((res) => res.text())
+      .then(() => alert("✅ Priser kalkylerade!"));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white p-6 font-mono">
+        <p>Laddar drycker...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-6 font-mono">
       <h1 className="text-3xl mb-6">🛠 Adminläge – Drinkbörsen</h1>
 
       <div className="space-y-3">
-        {drinksData.map((drink) => (
+        {drinks.map((drink) => (
           <DrinkAdminRow
             key={drink.id}
             id={drink.id}
             name={drink.name}
-            sold={adminState[drink.id]?.sold ?? 0}
-            minPrice={adminState[drink.id]?.min ?? 0}
-            maxPrice={adminState[drink.id]?.max ?? 0}
-            onSoldChange={handleSoldChange}
-            onMinChange={handleMinChange}
-            onMaxChange={handleMaxChange}
+            sold={drink.sold}
+            minPrice={drink.min}
+            maxPrice={drink.max}
+            onSoldChange={(id, val) => updateDrink(id, "sold", val)}
+            onMinChange={(id, val) => updateDrink(id, "min", val)}
+            onMaxChange={(id, val) => updateDrink(id, "max", val)}
           />
         ))}
       </div>
 
       <button
         onClick={handleRegister}
-        className="mt-6 px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white font-bold"
+        className="mt-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-bold"
       >
-        ✅ Registrera köp
+        🔁 Kalkylera priser
       </button>
     </div>
   );

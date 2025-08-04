@@ -1,5 +1,5 @@
 [
-    { "id": 1, "name": "Beer", "price": 50 },
+    { "id": 1, "name": "Beer", "price": 120 },
     { "id": 2, "name": "IPA", "price": 55 },
     { "id": 3, "name": "Cider", "price": 53 },
     { "id": 4, "name": "Martini", "price": 60 },

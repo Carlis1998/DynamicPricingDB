@@ -1,12 +1,18 @@
-// src/pages/HomePage.tsx
 import { useEffect, useState } from "react";
 import { DrinkCard } from "../components/DrinkCard";
 import drinksJSON from "../data/drinks.json";
+import { calculateNewPrices, PriceMode } from "../utils/calculateNewPrices";
 
 interface Drink {
   id: number;
   name: string;
   price: number;
+}
+
+interface DrinkMeta {
+  sold: number;
+  min: number;
+  max: number;
 }
 
 export default function HomePage() {
@@ -15,18 +21,46 @@ export default function HomePage() {
     new Map(drinksJSON.map((d) => [d.id, d.price]))
   );
 
+  // Sätt dummy-metadata (dessa kommer i framtiden från backend/admin)
+  const [meta] = useState<Record<number, DrinkMeta>>(() =>
+    Object.fromEntries(
+      drinksJSON.map((d) => [
+        d.id,
+        {
+          sold: Math.floor(Math.random() * 20), // just nu dummy
+          min: d.price - 10,
+          max: d.price + 10,
+        },
+      ])
+    )
+  );
+
   useEffect(() => {
     const interval = setInterval(() => {
+      // Spara tidigare priser
       setPrevPrices(new Map(drinks.map((d) => [d.id, d.price])));
+
+      // Konstruera modellens input
+      const enriched = drinks.map((d) => ({
+        id: d.id,
+        basePrice: d.price,
+        sold: meta[d.id]?.sold ?? 0,
+        min: meta[d.id]?.min ?? 10,
+        max: meta[d.id]?.max ?? 999,
+      }));
+
+      const newPrices = calculateNewPrices(enriched, "normal");
+
       setDrinks((prev) =>
-        prev.map((d) => {
-          const delta = Math.floor(Math.random() * 5 - 2);
-          return { ...d, price: Math.max(20, d.price + delta) };
-        })
+        prev.map((d) => ({
+          ...d,
+          price: newPrices[d.id],
+        }))
       );
     }, 10000);
+
     return () => clearInterval(interval);
-  }, [drinks]);
+  }, [drinks, meta]);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
@@ -44,7 +78,6 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* Admin-knapp i nedre vänstra hörnet */}
       <a
         href="/admin"
         className="fixed bottom-4 left-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition"
