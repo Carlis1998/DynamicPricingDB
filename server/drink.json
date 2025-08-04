@@ -1,5 +1,0 @@
-[
-    { "id": 1, "name": "Beer", "price": 50, "previousPrice": 50, "sold": 0, "min": 40, "max": 80 },
-    { "id": 2, "name": "IPA", "price": 55, "previousPrice": 55, "sold": 0, "min": 45, "max": 90 },
-    { "id": 3, "name": "Cider", "price": 53, "previousPrice": 53, "sold": 0, "min": 43, "max": 85 }
-]

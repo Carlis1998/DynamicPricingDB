@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Beer",
+    "price": null,
+    "previousPrice": 50,
+    "sold": 8,
+    "min": 40,
+    "max": 80
+  },
+  {
+    "id": 2,
+    "name": "IPA",
+    "price": null,
+    "previousPrice": 55,
+    "sold": 8,
+    "min": 45,
+    "max": 90
+  },
+  {
+    "id": 3,
+    "name": "Cider",
+    "price": null,
+    "previousPrice": 53,
+    "sold": 0,
+    "min": 43,
+    "max": 85
+  },
+  {
+    "id": 4,
+    "name": "Martini",
+    "price": null,
+    "previousPrice": 60,
+    "sold": 0,
+    "min": 50,
+    "max": 100
+  },
+  {
+    "id": 5,
+    "name": "Stout",
+    "price": null,
+    "previousPrice": 48,
+    "sold": 0,
+    "min": 38,
+    "max": 85
+  },
+  {
+    "id": 6,
+    "name": "Martini Dry",
+    "price": null,
+    "previousPrice": 58,
+    "sold": 0,
+    "min": 48,
+    "max": 95
+  },
+  {
+    "id": 7,
+    "name": "Alkfri Cider",
+    "price": null,
+    "previousPrice": 40,
+    "sold": 0,
+    "min": 30,
+    "max": 65
+  },
+  {
+    "id": 8,
+    "name": "Sex on the Beach",
+    "price": null,
+    "previousPrice": 65,
+    "sold": 0,
+    "min": 50,
+    "max": 90
+  }
+]

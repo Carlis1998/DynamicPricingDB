@@ -37,14 +37,36 @@ export function AdminPage() {
     });
   };
 
-  const handleRegister = () => {
+  const handleRegisterSales = () => {
+    for (const drink of drinks) {
+      fetch("http://localhost:4000/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: drink.id,
+          sold: drink.sold,
+          min: drink.min,
+          max: drink.max,
+        }),
+      });
+    }
+    alert("🛒 Försäljning registrerad!");
+  };
+
+  const handleRecalculate = (mode: "normal" | "crash") => {
     fetch("http://localhost:4000/recalculate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode: "normal" }),
+      body: JSON.stringify({ mode }),
     })
       .then((res) => res.text())
-      .then(() => alert("✅ Priser kalkylerade!"));
+      .then(() => {
+        alert(mode === "crash" ? "💥 Börskrasch genomförd!" : "🔁 Priser uppdaterade!");
+        // Uppdatera priser i UI också:
+        return fetch("http://localhost:4000/drinks")
+          .then((res) => res.json())
+          .then((data) => setDrinks(data));
+      });
   };
 
   if (loading) {
@@ -75,12 +97,26 @@ export function AdminPage() {
         ))}
       </div>
 
-      <button
-        onClick={handleRegister}
-        className="mt-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-bold"
-      >
-        🔁 Kalkylera priser
-      </button>
+      <div className="flex gap-4 mt-8">
+        <button
+          onClick={handleRegisterSales}
+          className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white font-bold"
+        >
+          🛒 Registrera försäljning
+        </button>
+        <button
+          onClick={() => handleRecalculate("normal")}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white font-bold"
+        >
+          🔁 Uppdatera priser
+        </button>
+        <button
+          onClick={() => handleRecalculate("crash")}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-white font-bold"
+        >
+          💥 Börskrasch
+        </button>
+      </div>
     </div>
   );
 }

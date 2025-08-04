@@ -1,66 +1,31 @@
 import { useEffect, useState } from "react";
 import { DrinkCard } from "../components/DrinkCard";
-import drinksJSON from "../data/drinks.json";
-import { calculateNewPrices, PriceMode } from "../utils/calculateNewPrices";
 
 interface Drink {
   id: number;
   name: string;
   price: number;
-}
-
-interface DrinkMeta {
-  sold: number;
-  min: number;
-  max: number;
+  previousPrice: number;
 }
 
 export default function HomePage() {
-  const [drinks, setDrinks] = useState<Drink[]>(drinksJSON);
-  const [prevPrices, setPrevPrices] = useState<Map<number, number>>(
-    new Map(drinksJSON.map((d) => [d.id, d.price]))
-  );
-
-  // Sätt dummy-metadata (dessa kommer i framtiden från backend/admin)
-  const [meta] = useState<Record<number, DrinkMeta>>(() =>
-    Object.fromEntries(
-      drinksJSON.map((d) => [
-        d.id,
-        {
-          sold: Math.floor(Math.random() * 20), // just nu dummy
-          min: d.price - 10,
-          max: d.price + 10,
-        },
-      ])
-    )
-  );
+  const [drinks, setDrinks] = useState<Drink[]>([]);
+  const [prevPrices, setPrevPrices] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Spara tidigare priser
-      setPrevPrices(new Map(drinks.map((d) => [d.id, d.price])));
+    const fetchData = () => {
+      fetch("http://localhost:4000/drinks")
+        .then((res) => res.json())
+        .then((data) => {
+          setPrevPrices(new Map(data.map((d: Drink) => [d.id, d.previousPrice])));
+          setDrinks(data);
+        });
+    };
 
-      // Konstruera modellens input
-      const enriched = drinks.map((d) => ({
-        id: d.id,
-        basePrice: d.price,
-        sold: meta[d.id]?.sold ?? 0,
-        min: meta[d.id]?.min ?? 10,
-        max: meta[d.id]?.max ?? 999,
-      }));
-
-      const newPrices = calculateNewPrices(enriched, "normal");
-
-      setDrinks((prev) =>
-        prev.map((d) => ({
-          ...d,
-          price: newPrices[d.id],
-        }))
-      );
-    }, 10000);
-
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
-  }, [drinks, meta]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white p-4">
